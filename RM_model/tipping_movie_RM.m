@@ -4,9 +4,6 @@
 warning off
 clc
 clear
-
-addpath('C:\Users\halkhayuon\Dropbox\01_researchprojects\03-codes\01_MATLAB')
-addpath('C:\Users\ha317\Dropbox\01_researchprojects\03-codes\01_MATLAB')
 set(0,'defaulttextInterpreter','latex');
 
 % parameters:
@@ -171,8 +168,8 @@ V.FrameRate = freamsPerSec;
 open(V);
 ind_movie = 1;
 tstep = 0.1;
-% ttSpan = [0:tstep:55,55*ones(1,10*freamsPerSec),55:tstep:100];
-ttSpan = [0:tstep:100];
+ttSpan = [0:tstep:55,55*ones(1,10*freamsPerSec),55:tstep:100];
+
 for tt = ttSpan
     
     % first subplot
@@ -246,9 +243,9 @@ for tt = ttSpan
         'LineWidth',4,'Color',[0.47 0.67 0.19],'Marker','.')
     hold on
     
-    %     plot(...
-    %         varman(:,1),mult*varman(:,2),...
-    %         'LineWidth',3,'Color','r');
+    plot(...
+        varman(:,1),mult*varman(:,2),...
+        'LineWidth',3,'Color','r');
     hold on
     
     
@@ -273,13 +270,9 @@ for tt = ttSpan
     yticklabels({'' 5 '' 15 '' ''});
     xlabel('$N$','Position',[14.5,-0.36,-1])
     ylabel('$P$','Rotation',0,'Position',[-0.6,23,-1])
-    %     legend(...
-    %         '$~~~~\Gamma\big(r(t)\big)$',...
-    %         '$~~~~\theta\big(r(t)\big)$',...
-    %         '$~\big(N(t),P(t)\big)$',...
-    %         'Interpreter','latex','EdgeColor','w')
     legend(...
         '$~~~~\Gamma\big(r(t)\big)$',...
+        '$~~~~\theta\big(r(t)\big)$',...
         '$~\big(N(t),P(t)\big)$',...
         'Interpreter','latex','EdgeColor','w')
     hold off
@@ -302,30 +295,12 @@ for tt = ttSpan
         'Interpreter','latex','EdgeColor','w')
     hold off
     set(gca,'FontSize',20)
-    %
-    %     if tt<55
-    %         annotation('ellipse',...
-    %             [0.379375 0.794285714285714 0.00687500000000002 0.0157142857142857],...
-    %             'LineStyle','none',...
-    %             'FaceColor','k');
-    %     else
-    %         annotation('ellipse',...
-    %             [0.379375 0.794285714285714 0.00687500000000002 0.0157142857142857],...
-    %             'LineStyle','none',...
-    %             'FaceColor','k');
-    %     end
     
-    % if tt<55
-    %     annotation('ellipse',...
-    %         [0.379375 0.837142857142857 0.00687500000000002 0.0157142857142857],...
-    %         'LineStyle','none',...
-    %         'FaceColor','k');
-    % else
     annotation('ellipse',...
-        [0.379375 0.837142857142857 0.00687500000000002 0.0157142857142857],...
+        [0.379375 0.794285714285714 0.00687500000000002 0.0157142857142857],...
         'LineStyle','none',...
         'FaceColor','k');
-    %end
+    
     
     
     left   =  .3e3;
@@ -368,9 +343,21 @@ dP = gamma * ((alpha*P*N)/(beta + N)) - (delta*P);
 dvar = [dN;dP];
 end
 
-% function [value, isterminal, direction] = myEvent(t,y)
-% TOL = 1e-7;
-% value      = norm(y)<TOL;
-% isterminal = 1;   % Stop the integration
-% direction  = 0;   % approch zero from either diractions?
-% end
+function df = MyJacobian(f,x)
+% to coumpute a jacobian matrix for a function f:R^n --> R^n
+h=1e-4;
+n=length(f(x)); m=length(x);
+df = NaN(n,m);
+if isfinite(sum(x))
+    % F=repmat(f(x),1,m);
+    for j=1:m
+        F1=f(x);
+        x(j)=x(j)+h;
+        F2=f(x);
+        x(j)=x(j)-h;
+        df(:,j)=(F2-F1)./h;
+    end
+else
+    df = NaN(n,m);
+end
+end
