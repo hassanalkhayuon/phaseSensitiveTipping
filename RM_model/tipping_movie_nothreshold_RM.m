@@ -168,7 +168,7 @@ V.FrameRate = freamsPerSec;
 open(V);
 ind_movie = 1;
 tstep = 0.1;
-ttSpan = [0:tstep:55,55*ones(1,10*freamsPerSec),55:tstep:100];
+ttSpan = [0:tstep:100];
 
 for tt = ttSpan
     
@@ -246,7 +246,6 @@ for tt = ttSpan
 %     plot(...
 %         varman(:,1),mult*varman(:,2),...
 %         'LineWidth',3,'Color','r');
-    hold on
     
     el_1  = 2000;
     el_2  = 2200;
@@ -535,7 +534,7 @@ annotation('ellipse',...
     'LineStyle','none',...
     'FaceColor',[0 0 0]);
 
-    annotation('line',[0.359975 0.379975],[0.844328571428571 0.844328571428571],'LineWidth',2);
+annotation('line',[0.359975 0.379975],[0.844328571428571 0.844328571428571],'LineWidth',2);
     
     
     left   =  .3e3;
