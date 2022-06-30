@@ -159,9 +159,18 @@ TPer = [9.665
 
 %%
 
+% new colouers 
+red    = [0.86,0.02,0.05];
+yellow = [0.87 0.67 0.20];
+green  = [0.31,0.70,0.40];
+blue   = [0.10,0.40,0.69];
+fainted_red   = [0.86,0.02,0.05,0.4];
+fainted_green = [0.31,0.70,0.40,0.4];
+fainted_blue  = [0.10,0.40,0.69,0.4];
+
 
 % making movie and plotting the phase space
-MovieName = 'phase_tipping_movie_RM_v1.mp4';
+MovieName = 'phase_tipping_movie_RM_v3.mp4';
 V = VideoWriter(MovieName,'MPEG-4');
 freamsPerSec = 20;
 V.FrameRate = freamsPerSec;
@@ -186,10 +195,10 @@ for tt = ttSpan
     indPer = find(abs(Rvar(tt)-R)== min(abs(Rvar(tt)-R)));
     Rper = R(indPer);
     Tper = TPer(indPer);
-    initcond = [8   0.01];
-    
     ivpfun   = @(t,var)RModefun(var,Rper);
     perfun   = @(t,var,Tper)Tper*RModefun(var,Rper);
+
+    initcond = [8   0.01];
     
     [~,tempvar]  = ode45(ivpfun,[0 200],initcond);
     initper  = tempvar(end,:);
@@ -208,14 +217,36 @@ for tt = ttSpan
         ]);
     
     BVPper = bvp5c(perfun,BC,solinit);
-    
-    
-    
     nPoints = 1000;
     ss = linspace(0,1,nPoints);
-    
+
     varper = deval(BVPper,ss);
     
+    if tt >= 55 && tt<=58
+        Rper_pre = R(indPer - 1);
+        Tper_pre = TPer(indPer -1);
+        ivpfun_pre   = @(t,var)RModefun(var,Rper_pre);
+        perfun_pre   = @(t,var,Tper)Tper*RModefun(var,Rper_pre);
+
+        [~,tempvar_pre]  = ode45(ivpfun_pre,[0 200],initcond);
+        initper_pre  = tempvar_pre(end,:);
+        ivpsol_pre = ode45(@(t,var)perfun_pre(t,var,Tper_pre),[0 1],initper_pre, opts);
+
+
+        % The boundary condtions for the periodic orbit
+        tempinit_pre = @(s)deval(ivpsol_pre,s);
+        solinit_pre=bvpinit(ss,tempinit_pre,Tper_pre);
+
+        BC_pre=@(WL,WR,Tper_pre)(...
+            [WL(1)-WR(1);...
+            WL(2)-WR(2);...
+            WL(2)-initper_pre(2);... %point phase condition
+            ]);
+
+        BVPper_pre = bvp5c(perfun_pre,BC_pre,solinit_pre);
+        varper_pre = deval(BVPper_pre,ss);
+    end
+
     % the threshold theta
     e2      = [mu,0];
     G       = @(var)RModefun(var,Rper);
@@ -240,12 +271,16 @@ for tt = ttSpan
     
     plot(...
         varper(1,:),mult*varper(2,:),...
-        'LineWidth',4,'Color',[0.47 0.67 0.19],'Marker','.')
+        'LineWidth',4,'Color',green)
     hold on
-    
     plot(...
-        varman(:,1),mult*varman(:,2),...
-        'LineWidth',3,'Color','r');
+        varman(:,1),mult*varman(:,2),'--k',...
+        'LineWidth',1);
+    if tt >= 55 && tt<=58
+    plot(...
+        varper_pre(1,:),mult*varper_pre(2,:),...
+        'LineWidth',4,'Color',fainted_green)
+    end
     hold on
     
     el_1  = 2000;
@@ -543,7 +578,7 @@ for tt = ttSpan
     width  =  1.6e3;
     height =  .7e3;
     
-    set(gcf,'Position',[left bottom width height])
+    set(gcf,'Position',[left bottom width height],'renderer', 'painters')
     set(gcf,'color','w');
     drawnow
     
